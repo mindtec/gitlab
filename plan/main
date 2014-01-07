@@ -1,5 +1,7 @@
 #include <turnkey/base>
 
+mc /* Midnight Commander */
+
 nginx
 redis-server
 
