@@ -1,6 +1,8 @@
 #include <turnkey/base>
 
+apt-utils
 mc /* Midnight Commander */
+vim
 
 nginx
 redis-server
@@ -22,18 +24,19 @@ ruby-dev
 python-dev
 python-pygments
 python-pip
+python-docutils
 
 libicu-dev
 libssl-dev
 libxml2-dev
 libxslt1-dev
 libcurl4-openssl-dev
-libreadline-gplv2-dev
 libgdbm-dev
 libncurses5-dev
 libffi-dev
 zlib1g-dev
 libyaml-dev
+libreadline-dev
 
 postfix
 webmin-postfix

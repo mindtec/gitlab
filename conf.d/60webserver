@@ -7,5 +7,8 @@ cd $GIT_HOME/gitlab/config
 mv unicorn.rb.example unicorn.rb
 
 rm /etc/nginx/sites-enabled/default
+
+cp $GIT_HOME/gitlab/lib/support/nginx/gitlab /etc/nginx/sites-available/gitlab
+sed -i "s|YOUR_SERVER_FQDN|$DOMAIN|" /etc/nginx/sites-available/gitlab
 ln -s /etc/nginx/sites-available/gitlab /etc/nginx/sites-enabled/gitlab
 

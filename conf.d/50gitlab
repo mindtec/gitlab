@@ -13,69 +13,26 @@ cd $GIT_HOME/gitlab
 exec_git "git checkout $VERSION_GITLAB"
 
 # configure settings
-exec_git "cat >$GIT_HOME/gitlab/config/gitlab.yml<<EOF
-# Gitlab application config file
-
-production: &base
-
-  gitlab:
-    host: $DOMAIN
-    port: 80
-    https: false
-    email_from: $ADMIN_MAIL
-    default_projects_limit: 10
-    signup_enabled: false
-    username_changing_enabled: true
-
-  gravatar:
-    enabled: true
-
-  satellites:
-    path: $GIT_HOME/gitlab-satellites/
-
-  gitlab-shell:
-    repos_path: $GIT_HOME/repositories/
-    hooks_path: $GIT_HOME/gitlab-shell/hooks/
-    upload_pack: true
-    receive_pack: true
-    ssh_port: 22
-
-  git:
-    bin_path: /usr/bin/git
-    max_size: 5242880 # 5.megabytes
-    timeout: 10
-
-EOF"
+exec_git "mv $GIT_HOME/gitlab/config/gitlab.yml.example $GIT_HOME/gitlab/config/gitlab.yml"
+sed -i "s|host: localhost|host: $DOMAIN|" $GIT_HOME/gitlab/config/gitlab.yml
+sed -i "s|email_from: gitlab@localhost|email_from: $ADMIN_MAIL|" $GIT_HOME/gitlab/config/gitlab.yml
+sed -i "s|support_email:|# support_email:|" $GIT_HOME/gitlab/config/gitlab.yml
+sed -i "s|# user:|user:|" $GIT_HOME/gitlab/config/gitlab.yml
 
 exec_git "mkdir -p $GIT_HOME/gitlab-satellites"
 
-exec_git "cat >$GIT_HOME/gitlab/config/database.yml<<EOF
-production:
-  adapter: mysql2
-  encoding: utf8
-  reconnect: false
-  database: $DB_NAME
-  username: $DB_USER
-  password: $DB_PASS
-  pool: 5
+exec_git "mv $GIT_HOME/gitlab/config/database.yml.mysql $GIT_HOME/gitlab/config/database.yml"
+sed -i "0,/database:.*/s/database:.*/database: $DB_NAME/" $GIT_HOME/gitlab/config/database.yml
+sed -i "0,/username:.*/s/username:.*/username: $DB_USER/" $GIT_HOME/gitlab/config/database.yml
+sed -i "0,/password:.*/s/password:.*/password: $DB_PASS/" $GIT_HOME/gitlab/config/database.yml
 
-EOF"
 chmod 640 $GIT_HOME/gitlab/config/database.yml
 
-exec_git "cat >$GIT_HOME/gitlab/db/fixtures/production/001_admin.rb<<EOF
-admin = User.create(
-  :email => \"$ADMIN_MAIL\",
-  :name => \"Administrator\",
-  :username => \"admin\",
-  :password => \"$ADMIN_PASS\",
-  :password_confirmation => \"$ADMIN_PASS\"
-)
-
-admin.projects_limit = 10000
-admin.admin = true
-admin.save!
-
-EOF"
+sed -i "s|email:.*|email: \"$ADMIN_MAIL\",|" $GIT_HOME/gitlab/db/fixtures/production/001_admin.rb
+sed -i "s|username:.*|username: \'gitlab_admin\',|" $GIT_HOME/gitlab/db/fixtures/production/001_admin.rb
+sed -i "s|password:.*|password: \"$ADMIN_PASS\",|" $GIT_HOME/gitlab/db/fixtures/production/001_admin.rb
+sed -i "s|password_confirmation:.*|password_confirmation: \"$ADMIN_PASS\",|" $GIT_HOME/gitlab/db/fixtures/production/001_admin.rb
+sed -i "s|password_expires_at:.*|# password_expires_at:|" $GIT_HOME/gitlab/db/fixtures/production/001_admin.rb
 
 exec_git "cat >>$GIT_HOME/gitlab/app/views/layouts/application.html.haml<<EOF
 <div id='turnkey-credit' style='font-size:10px;text-align:center;padding-top:20px'><a href='http://www.turnkeylinux.org/gitlab'>GitLab Appliance</a> - Powered by <a href='http://www.turnkeylinux.org'>TurnKey Linux</a></div>
@@ -87,24 +44,35 @@ chown -R $GIT_USER $GIT_HOME/gitlab/tmp
 chmod -R u+rwX $GIT_HOME/gitlab/log
 chmod -R u+rwX $GIT_HOME/gitlab/tmp
 
+# Create directories for sockets/pids and make sure GitLab can write to them
+exec_git "mkdir $GIT_HOME/gitlab/tmp/pids"
+exec_git "mkdir $GIT_HOME/gitlab/tmp/sockets"
+chmod -R u+rwX  $GIT_HOME/gitlab/tmp/pids
+chmod -R u+rwX  $GIT_HOME/gitlab/tmp/sockets
+
+# Create public/uploads directory otherwise backup will fail
+exec_git "mkdir $GIT_HOME/gitlab/public/uploads"
+chmod -R u+rwX  $GIT_HOME/gitlab/public/uploads
+
+
 # recommended in installation guide
 ln -s /usr/bin/python /usr/local/bin/python2
 
 # temporarily change ssh port as to not conflict with build system
 sed -i "s|Port 22|Port 2222|" /etc/ssh/sshd_config
 sed -i "s|Port 22|Port 2222|" $GIT_HOME/.ssh/config
-sed -i "s|ssh_port: 22|ssh_port: 2222|" $GIT_HOME/gitlab/config/gitlab.yml
+sed -i "s|# ssh_port: 22|ssh_port: 2222|" $GIT_HOME/gitlab/config/gitlab.yml
 
 # install
 [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
 cd $GIT_HOME/gitlab
-exec_git "bundle install --deployment --without development test postgres"
+exec_git "bundle install --deployment --without development test postgres aws"
 
 /etc/init.d/ssh start
 /etc/init.d/redis-server start
 exec_git "bundle exec rake force=yes gitlab:setup RAILS_ENV=production"
-exec_git "bundle exec rake sidekiq:start RAILS_ENV=production"
 exec_git "bundle exec rake gitlab:env:info RAILS_ENV=production"
+exec_git "bundle exec rake assets:precompile RAILS_ENV=production"
 unset HTTP_PROXY
 
 # stop running services
@@ -115,7 +83,7 @@ unset HTTP_PROXY
 # change ssh port configuration back
 sed -i "s|Port 2222|Port 22|" /etc/ssh/sshd_config
 sed -i "s|port 2222|port 22|" $GIT_HOME/.ssh/config
-sed -i "s|ssh_port: 2222|ssh_port: 22|" $GIT_HOME/gitlab/config/gitlab.yml
+sed -i "s|ssh_port: 2222|# ssh_port: 22|" $GIT_HOME/gitlab/config/gitlab.yml
 
 ## TESTING
 #sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production

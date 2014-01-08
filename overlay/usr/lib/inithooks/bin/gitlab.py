@@ -54,7 +54,7 @@ def main():
         d = Dialog('TurnKey Linux - First boot configuration')
         password = d.get_password(
             "GitLab Password",
-            "Enter new password for the GitLab 'admin' account.")
+            "Enter new password for the GitLab 'gitlab_admin' account.")
 
     if not email:
         if 'd' not in locals():
@@ -62,7 +62,7 @@ def main():
 
         email = d.get_email(
             "GitLab Email",
-            "Enter email address for the GitLab 'admin' account.",
+            "Enter email address for the GitLab 'gitlab_admin' account.",
             "admin@example.com")
 
     if not domain:
@@ -81,12 +81,15 @@ def main():
     hash = bcrypt.hashpw(password, salt)
 
     m = MySQL()
-    m.execute('UPDATE gitlab_production.users SET email=\"%s\" WHERE username=\"admin\";' % email)
-    m.execute('UPDATE gitlab_production.users SET encrypted_password=\"%s\" WHERE username=\"admin\";' % hash)
+    m.execute('UPDATE gitlab_production.users SET email=\"%s\" WHERE username=\"gitlab_admin\";' % email)
+    m.execute('UPDATE gitlab_production.users SET encrypted_password=\"%s\" WHERE username=\"gitlab_admin\";' % hash)
 
     config = "/home/git/gitlab/config/gitlab.yml"
     system("sed -i \"s|host:.*|host: %s|\" %s" % (domain, config))
     system("sed -i \"s|email_from:.*|email_from: %s|\" %s" % (email, config))
+
+    config = "/etc/nginx/sites-available/gitlab"
+    system("sed -i \"s|server_name.*|server_name %s;|\" %s" % (domain, config))
 
     system_github("git config --global user.email %s" % email)
     system_github("bundle exec rake gitlab:env:info RAILS_ENV=production")

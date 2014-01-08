@@ -16,4 +16,4 @@ EOF"
 # set gitlab's git name and email
 exec_git "git config --global user.name GitLab"
 exec_git "git config --global user.email $ADMIN_MAIL"
-
+exec_git "git config --global core.autocrlf input"
