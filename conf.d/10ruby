@@ -2,8 +2,15 @@
 
 source /usr/local/src/gitlab.conf
 
-# install gems
 [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
+# install ruby
+curl --progress ftp://ftp.ruby-lang.org/pub/ruby/stable-snapshot.tar.gz | tar xz
+cd ruby-*
+./configure --disable-install-rdoc
+make
+sudo make install
+
+# install gems
 gem install bundler --no-ri --no-rdoc
 gem install charlock_holmes --version $VERSION_CHARLOCK_HOLMES --no-ri --no-rdoc
 unset HTTP_PROXY
