@@ -1,8 +1,13 @@
 #!/bin/bash -ex
 
-# set timezone and german ntp servers
+# set timezone to Berlin
 echo "Europe/Berlin" > /etc/timezone
+
+# set german ntp.pool server
 sed -i "0,/server 0.*/s/server 0.*/server 0.de.pool.ntp.org/" /etc/ntp.conf
 sed -i "0,/server 1.*/s/server 1.*/server 1.de.pool.ntp.org/" /etc/ntp.conf
 sed -i "0,/server 2.*/s/server 2.*/server 2.de.pool.ntp.org/" /etc/ntp.conf
 sed -i "0,/server 3.*/s/server 3.*/server 3.de.pool.ntp.org/" /etc/ntp.conf
+
+# reconfig tzdata
+dpkg-reconfigure -f noninteractive tzdata
