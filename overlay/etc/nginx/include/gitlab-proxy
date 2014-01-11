@@ -1,21 +1,23 @@
-root /home/git/gitlab/public;
-
-access_log /var/log/nginx/gitlab.access.log;
-error_log /var/log/nginx/gitlab.error.log;
-
 location / {
-    # serve static files from defined root folder;.
-    try_files $uri $uri/index.html $uri.html @gitlab;
+  # serve static files from defined root folder;.
+  # @gitlab is a named location for the upstream fallback, see below
+  try_files $uri $uri/index.html $uri.html @gitlab;
 }
 
+# if a file, which is not found in the root folder is requested,
+# then the proxy pass the request to the upsteam (gitlab unicorn)
 location @gitlab {
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-NginX-Proxy true;
+  proxy_read_timeout 300; # https://github.com/gitlabhq/gitlabhq/issues/694
+  proxy_connect_timeout 300; # https://github.com/gitlabhq/gitlabhq/issues/694
+  proxy_redirect     off;
+  proxy_buffering    off;
 
-    proxy_pass http://unix:/home/git/gitlab/tmp/sockets/gitlab.socket;
-    proxy_redirect off;
-    proxy_buffering off;
+  proxy_set_header   X-Forwarded-Proto $scheme;
+  proxy_set_header   Host              $host;
+  proxy_set_header   X-Real-IP         $remote_addr;
+  proxy_set_header   X-NginX-Proxy     true;
+  proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+
+  proxy_pass http://gitlab;
 }
 
