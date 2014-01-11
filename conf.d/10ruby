@@ -12,7 +12,7 @@ sudo make install
 
 # update and install gems
 gem update --system --no-ri --no-rdoc
-gem update --no-ri --no-rdoc
+# gem update --no-ri --no-rdoc 
 gem install bundler --no-ri --no-rdoc
 gem install charlock_holmes --version $VERSION_CHARLOCK_HOLMES --no-ri --no-rdoc
 unset HTTP_PROXY
