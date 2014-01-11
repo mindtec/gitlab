@@ -6,14 +6,17 @@ source /usr/local/src/gitlab.conf
 # install ruby
 curl --progress ftp://ftp.ruby-lang.org/pub/ruby/stable-snapshot.tar.gz | tar xz
 cd ruby-*
-./configure --disable-install-rdoc
+./configure --prefix=/usr --disable-install-rdoc
 make
 sudo make install
 
 # update and install gems
-gem update --system --no-ri --no-rdoc
-# gem update --no-ri --no-rdoc 
-gem install bundler --no-ri --no-rdoc
-gem install charlock_holmes --version $VERSION_CHARLOCK_HOLMES --no-ri --no-rdoc
+GEMOPTS="--no-rdoc --no-ri"
+
+gem update  $GEMOPTS --system
+gem update  $GEMOPTS
+gem install $GEMOPTS rake
+gem install $GEMOPTS bundler
+gem install $GEMOPTS charlock_holmes --version $VERSION_CHARLOCK_HOLMES
 unset HTTP_PROXY
 
