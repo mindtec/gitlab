@@ -85,6 +85,9 @@ sed -i "s|Port 2222|Port 22|" /etc/ssh/sshd_config
 sed -i "s|port 2222|port 22|" $GIT_HOME/.ssh/config
 sed -i "s|ssh_port: 2222|# ssh_port: 22|" $GIT_HOME/gitlab/config/gitlab.yml
 
+# Enable rack_attack
+cp $GIT_HOME/gitlab/config/initializers/rack_attack.rb.example $GIT_HOME/gitlab/config/initializers/rack_attack.rb
+
 ## TESTING
 #sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production
 
