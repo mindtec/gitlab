@@ -8,7 +8,7 @@ curl --progress ftp://ftp.ruby-lang.org/pub/ruby/stable-snapshot.tar.gz | tar xz
 cd ruby-*
 ./configure --disable-install-rdoc
 make
-sudo make install
+make install
 
 # update and install gems
 gem update --system --no-ri --no-rdoc
