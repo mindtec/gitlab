@@ -28,7 +28,7 @@ Importend notes
 ---------------
 
 Use *anwa / common* in tkldev to get git 1.8.x and Ruby 2.1.x. 
-This is **not** jet tested with *turnkey / common* !
+This is **not** yet tested with *turnkey / common* !
 
 Credentials *(passwords set at first boot)*
 -------------------------------------------
