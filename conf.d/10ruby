@@ -4,13 +4,12 @@ source /usr/local/src/gitlab.conf
 
 [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
 # install ruby
-cd /usr/src
+cd $SRC
 curl --progress ftp://ftp.ruby-lang.org/pub/ruby/stable-snapshot.tar.gz | tar xz
 cd ruby-*
 ./configure --prefix=/usr --disable-install-rdoc
 make
 make install
-rm -r ruby-*
 
 # update and install gems
 GEMOPTS="--no-rdoc --no-ri"
