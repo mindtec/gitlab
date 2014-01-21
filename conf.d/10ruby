@@ -11,6 +11,11 @@ cd ruby-*
 make
 make install
 
+# delete old gems
+rm -f /usr/bin/rake
+rm -f /usr/bin/rdoc
+rm -f /usr/bin/ri
+
 # update and install gems
 GEMOPTS="--no-rdoc --no-ri"
 
