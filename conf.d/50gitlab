@@ -23,8 +23,8 @@ exec_git "mkdir -p $GIT_HOME/gitlab-satellites"
 
 exec_git "mv $GIT_HOME/gitlab/config/database.yml.mysql $GIT_HOME/gitlab/config/database.yml"
 sed -i "0,/database:.*/s/database:.*/database: $DB_NAME/" $GIT_HOME/gitlab/config/database.yml
-sed -i "0,/username:.*/s/username:.*/username: $DB_USER/" $GIT_HOME/gitlab/config/database.yml
-sed -i "0,/password:.*/s/password:.*/password: $DB_PASS/" $GIT_HOME/gitlab/config/database.yml
+sed -i "s/username:.*/username: $DB_USER/" $GIT_HOME/gitlab/config/database.yml
+sed -i "s/password:.*/password: $DB_PASS/" $GIT_HOME/gitlab/config/database.yml
 
 chmod 640 $GIT_HOME/gitlab/config/database.yml
 
