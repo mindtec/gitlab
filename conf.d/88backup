@@ -1,0 +1,87 @@
+#!/bin/bash -ex
+
+source /usr/local/src/gitlab.conf
+
+[ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
+
+# Install gems
+gem install backup --prerelease --no-rdoc --no-ri
+gem install whenever --no-rdoc --no-ri
+
+unset HTTP_PROXY
+
+cd $GIT_HOME
+exec_git "mkdir backups"
+exec_git "backup generate:model --trigger gitlab_backup --archives --storages='local' --compressor='gzip' --databases='mysql' --notifiers='mail'"
+exec_git "cp $GIT_HOME/Backup/models/gitlab_backup.rb $GIT_HOME/Backup/models/gitlab_backup.rb.example"
+exec_git "cat >$GIT_HOME/Backup/models/gitlab_backup.rb<<EOF
+# encoding: utf-8
+
+Model.new(:gitlab_backup, 'Gitlab BackUp') do
+  ##
+  # Archive [Archive]
+  #
+  archive :my_archive do |archive|
+    archive.add \"$GIT_HOME/gitlab/config/\"
+    archive.add \"$GIT_HOME/repositories/\"
+  end
+
+  ##
+  # MySQL [Database]
+  #
+  database MySQL do |db|
+    # To dump all databases, set `db.name = :all` (or leave blank)
+    db.name = \"$DB_NAME\"
+    db.username = \"$DB_USER\"
+    db.password = \"$DB_PASS\"
+    db.host = \"localhost\"
+    db.port = 3306
+    db.socket = \"/var/run/mysqld/mysqld.sock\"
+  end
+
+  ##
+  # Local (Copy) [Storage]
+  #
+  store_with Local do |local|
+    local.path = \"$GIT_HOME/backups/\"
+    local.keep = 15
+  end
+
+  ##
+  # Gzip [Compressor]
+  #
+  compress_with Gzip
+
+  ##
+  # Mail [Notifier]
+  #
+  notify_by Mail do |mail|
+    mail.on_success = false
+    mail.on_warning = true
+    mail.on_failure = true
+
+    # mail.from = \"sender@email.com\"
+    # mail.to = \"receiver@email.com\"
+    # mail.address = \"smtp.gmail.com\"
+    # mail.port = 587
+    # mail.domain = \"your.host.name\"
+    # mail.user_name = \"sender@email.com\"
+    # mail.password = \"my_password\"
+    # mail.authentication = \"plain\"
+    # mail.encryption = :starttls
+  end
+
+end
+EOF"
+
+# Scheduling Backups
+cd $GIT_HOME/gitlab
+exec_git "wheneverize"
+exec_git "cat >>$GIT_HOME/gitlab/config/schedule.rb<<EOF
+every 1.day, :at => '4:30 am' do
+  command \"backup perform -t gitlab_backup\"
+end
+EOF"
+
+# Update crontab
+exec_git "whenever --update-crontab"
