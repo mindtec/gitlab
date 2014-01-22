@@ -3,7 +3,7 @@
 source /usr/local/src/gitlab.conf
 
 # download and checkout specified version
-URL="https://github.com/gitlabhq/gitlabhq.git"
+URL="https://gitlab.com/gitlab-org/gitlab-ce.git"
 
 [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
 exec_git "git clone $URL $GIT_HOME/gitlab"
