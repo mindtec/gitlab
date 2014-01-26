@@ -13,6 +13,7 @@ and on top of that:
    
    - GitLab, RubyGems and all other required components installed from
      latest upstream versions.
+   - Use gems backup and whenever for scheduled backups
    - Set GitLab admin password and email on firstboot (convenience,
      security).
    - Set GitLab domain to serve on first boot (convenience).
@@ -27,8 +28,7 @@ and on top of that:
 Importend notes
 ---------------
 
-Use *anwa / common* in tkldev to get git 1.8.x and Ruby 2.1.x. 
-This is **not** yet tested with *turnkey / common* !
+Use *anwa / common* in tkldev to get git 1.8.x from wheezy backports.
 
 Credentials *(passwords set at first boot)*
 -------------------------------------------
