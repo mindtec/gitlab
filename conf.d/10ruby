@@ -24,5 +24,6 @@ gem update  $GEMOPTS
 gem install $GEMOPTS rake
 gem install $GEMOPTS bundler
 gem install $GEMOPTS charlock_holmes --version $VERSION_CHARLOCK_HOLMES
+gem uninstall psych
 unset HTTP_PROXY
 
