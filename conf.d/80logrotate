@@ -2,5 +2,5 @@
 
 source /usr/local/src/gitlab.conf
 
-cp $GIT_HOME/gitlab/lib/support/logrotate/gitlab /etc/logrotate.d/gitlab
+cp $GITLAB_HOME/lib/support/logrotate/gitlab /etc/logrotate.d/gitlab
 

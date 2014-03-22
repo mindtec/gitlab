@@ -22,7 +22,7 @@ Model.new(:gitlab_backup, 'Gitlab BackUp') do
   # Archive [Archive]
   #
   archive :my_archive do |archive|
-    archive.add \"$GIT_HOME/gitlab/config/\"
+    archive.add \"$GITLAB_CONF/\"
     archive.add \"$GIT_HOME/repositories/\"
   end
 
@@ -75,9 +75,9 @@ end
 EOF"
 
 # Scheduling Backups
-cd $GIT_HOME/gitlab
+cd $GITLAB_HOME
 exec_git "wheneverize"
-exec_git "cat >>$GIT_HOME/gitlab/config/schedule.rb<<EOF
+exec_git "cat >>$GITLAB_CONF/schedule.rb<<EOF
 every 1.day, :at => '4:30 am' do
   command \"backup perform -t gitlab_backup\"
 end
