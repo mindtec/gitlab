@@ -18,6 +18,7 @@ sed -i "s|host: localhost|host: $DOMAIN|" $GITLAB_CONF/gitlab.yml
 sed -i "s|email_from: gitlab@localhost|email_from: $ADMIN_MAIL|" $GITLAB_CONF/gitlab.yml
 sed -i "s|support_email:|# support_email:|" $GITLAB_CONF/gitlab.yml
 sed -i "s|# user:|user:|" $GITLAB_CONF/gitlab.yml
+sed -i "s|max_size: .*|max_size: 20971520 # 20 megabytes|" $GITLAB_CONF/gitlab.yml
 
 exec_git "mkdir -p $GIT_HOME/gitlab-satellites"
 
