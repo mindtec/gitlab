@@ -2,19 +2,10 @@
 
 source /usr/local/src/gitlab.conf
 
-/etc/init.d/mysql start
-
-MYSQL_BATCH="mysql --user=root --password=$MYSQL_PASS --batch"
-MYSQL_ADMIN="mysqladmin --user=root --password=$MYSQL_PASS"
+/etc/init.d/postgresql start
 
 # Create a user for GitLab
-$MYSQL_BATCH --execute "CREATE USER $DB_USER@localhost identified by '$DB_PASS';"
+sudo -u postgres createuser -D -R -S $DB_USER
 
 # Create the GitLab production database
-$MYSQL_BATCH --execute "CREATE DATABASE IF NOT EXISTS $DB_NAME DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
-
-# Grant the GitLab user necessary permissions on the table.
-$MYSQL_BATCH --execute "GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON $DB_NAME.* TO $DB_USER@localhost;"
-
-
-
+sudo -u postgres createdb -O $DB_USER $DB_NAME

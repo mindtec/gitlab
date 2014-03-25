@@ -12,7 +12,7 @@ unset HTTP_PROXY
 
 cd $GIT_HOME
 exec_git "mkdir backups"
-exec_git "backup generate:model --trigger gitlab_backup --archives --storages='local' --compressor='gzip' --databases='mysql' --notifiers='mail'"
+exec_git "backup generate:model --trigger gitlab_backup --archives --storages='local' --compressor='gzip' --databases='postgresql' --notifiers='mail'"
 exec_git "cp $GIT_HOME/Backup/models/gitlab_backup.rb $GIT_HOME/Backup/models/gitlab_backup.rb.example"
 exec_git "cat >$GIT_HOME/Backup/models/gitlab_backup.rb<<EOF
 # encoding: utf-8
@@ -27,16 +27,16 @@ Model.new(:gitlab_backup, 'Gitlab BackUp') do
   end
 
   ##
-  # MySQL [Database]
+  # PostgreSQL [Database]
   #
-  database MySQL do |db|
+  database PostgreSQL do |db|
     # To dump all databases, set `db.name = :all` (or leave blank)
     db.name = \"$DB_NAME\"
     db.username = \"$DB_USER\"
-    db.password = \"$DB_PASS\"
-    db.host = \"localhost\"
-    db.port = 3306
-    db.socket = \"/var/run/mysqld/mysqld.sock\"
+    #db.password = \"$DB_PASS\"
+    #db.host = \"localhost\"
+    #db.port = 5432
+    #db.socket = \"/tmp/postgresql.sock\"
   end
 
   ##

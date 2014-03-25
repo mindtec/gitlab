@@ -14,7 +14,7 @@ import getopt
 import bcrypt
 
 from dialog_wrapper import Dialog
-from mysqlconf import MySQL
+from pgsqlconf import PostgreSQL
 from executil import ExecError, system
 
 
@@ -80,7 +80,7 @@ def main():
     salt = bcrypt.gensalt(10)
     hash = bcrypt.hashpw(password, salt)
 
-    m = MySQL()
+    m = PostgreSQL()
     m.execute('UPDATE gitlab_production.users SET email=\"%s\" WHERE username=\"gitlab_admin\";' % email)
     m.execute('UPDATE gitlab_production.users SET encrypted_password=\"%s\" WHERE username=\"gitlab_admin\";' % hash)
 

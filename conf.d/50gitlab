@@ -22,12 +22,12 @@ sed -i "s|max_size: .*|max_size: 20971520 # 20 megabytes|" $GITLAB_CONF/gitlab.y
 
 exec_git "mkdir -p $GIT_HOME/gitlab-satellites"
 
-exec_git "mv $GITLAB_CONF/database.yml.mysql $GITLAB_CONF/database.yml"
+exec_git "cp $GITLAB_CONF/database.yml.postgresql $GITLAB_CONF/database.yml"
 sed -i "0,/database:.*/s/database:.*/database: $DB_NAME/" $GITLAB_CONF/database.yml
 sed -i "s/username:.*/username: $DB_USER/" $GITLAB_CONF/database.yml
 sed -i "s/password:.*/password: $DB_PASS/" $GITLAB_CONF/database.yml
 
-chmod 640 $GITLAB_CONF/database.yml
+exec_git "chmod o-rwx config/database.yml"
 
 sed -i "s|email:.*|email: \"$ADMIN_MAIL\",|" $GITLAB_HOME/db/fixtures/production/001_admin.rb
 sed -i "s|username:.*|username: \'gitlab_admin\',|" $GITLAB_HOME/db/fixtures/production/001_admin.rb
@@ -67,10 +67,11 @@ sed -i "s|# ssh_port: 22|ssh_port: 2222|" $GITLAB_CONF/gitlab.yml
 # install
 [ "$FAB_HTTP_PROXY" ] && export HTTP_PROXY=$FAB_HTTP_PROXY
 cd $GITLAB_HOME
-exec_git "bundle install --deployment --without development test postgres aws"
+exec_git "bundle install --deployment --without development test mysql aws"
 
 /etc/init.d/ssh start
 /etc/init.d/redis-server start
+
 exec_git "bundle exec rake force=yes gitlab:setup RAILS_ENV=production"
 exec_git "bundle exec rake gitlab:env:info RAILS_ENV=production"
 exec_git "bundle exec rake assets:precompile RAILS_ENV=production"
@@ -79,7 +80,7 @@ unset HTTP_PROXY
 # stop running services
 /etc/init.d/ssh stop
 /etc/init.d/redis-server stop
-/etc/init.d/mysql stop
+/etc/init.d/postgresql stop
 
 # change ssh port configuration back
 sed -i "s|Port 2222|Port 22|" /etc/ssh/sshd_config
